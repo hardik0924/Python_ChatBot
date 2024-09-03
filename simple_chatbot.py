@@ -21,7 +21,7 @@ def get_response(user_input):
     return answers[best_match_index]
 
 # Telegram bot token (replace 'YOUR_TELEGRAM_BOT_TOKEN' with your actual token)
-bot = telebot.TeleBot('7434832021:AAHrthIcyd-UIa0jnch50kwEJzhKrKPZjK0')
+bot = telebot.TeleBot('bot token')
 
 # Handle the '/start' command
 @bot.message_handler(commands=['start'])
