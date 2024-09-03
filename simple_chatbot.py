@@ -1,33 +1,38 @@
+import telebot
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Load the dataset
-data = pd.read_excel('D:\\VS Code\\pythonchatbot\\chatbot_data.xlsx')
+# Load the data from Excel file
+data = pd.read_excel('chatbot_data.xlsx')
 
+questions = data['Question'].tolist()
+answers = data['Answer'].tolist()
 
-# Prepare the vectorizer
+# Initialize the vectorizer
 vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(data['Question'])
+X = vectorizer.fit_transform(questions)
 
-def chatbot_response(user_input):
+# Function to find the best match for the user's question
+def get_response(user_input):
     user_input_vector = vectorizer.transform([user_input])
     similarities = cosine_similarity(user_input_vector, X)
     best_match_index = similarities.argmax()
-    best_match_score = similarities[0, best_match_index]
+    return answers[best_match_index]
 
-    if best_match_score > 0.2:  # Threshold to determine if the response is relevant
-        return data['Answer'].iloc[best_match_index]
-    else:
-        return "I'm sorry, I don't understand the question."
+# Telegram bot token (replace 'YOUR_TELEGRAM_BOT_TOKEN' with your actual token)
+bot = telebot.TeleBot('7434832021:AAHrthIcyd-UIa0jnch50kwEJzhKrKPZjK0')
 
-# Simple loop to interact with the chatbot
-print("Chatbot is ready to talk! Type 'quit' to exit.")
-while True:
-    user_input = input("You: ")
-    if user_input.lower() == 'quit':
-        print("Chatbot: Goodbye!")
-        break
+# Handle the '/start' command
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "Hello! I'm your AI chatbot. How can I assist you today?")
 
-    response = chatbot_response(user_input)
-    print("Chatbot:", response)
+# Handle messages from the user
+@bot.message_handler(func=lambda message: True)
+def handle_message(message):
+    response = get_response(message.text)
+    bot.reply_to(message, response)
+
+# Start the bot
+bot.polling()
